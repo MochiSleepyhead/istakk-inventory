@@ -13,7 +13,21 @@
   <body>
 <?php
 	require 'inc/navigation.php';
+	
 ?>
+	<?php 
+	
+	$countNotifSmt = "SELECT COUNT(productId) as count FROM item WHERE stock <= safety_stock";
+	$countQuery = $conn->prepare($countNotifSmt);
+	$countQuery->execute();
+	
+	$row = $countQuery->fetch(PDO::FETCH_ASSOC);
+	$count = $row['count'];
+
+
+	
+	?>
+
     <!-- Page Content -->
     <div class="container-fluid">
 	  <div class="row">
@@ -27,6 +41,7 @@
 			  <a class="nav-link" id="v-pills-customer-tab" data-toggle="pill" href="#v-pills-customer" role="tab" aria-controls="v-pills-customer" aria-selected="false">Customer</a>
 			  <a class="nav-link" id="v-pills-search-tab" data-toggle="pill" href="#v-pills-search" role="tab" aria-controls="v-pills-search" aria-selected="false">Search</a>
 			  <a class="nav-link" id="v-pills-reports-tab" data-toggle="pill" href="#v-pills-reports" role="tab" aria-controls="v-pills-reports" aria-selected="false">Reports</a>
+			  <a class="nav-link" id="v-pills-stock-tab" data-toggle="pill" href="#v-pills-stock" role="tab" aria-controls="v-pills-stock" aria-selected="false">Notifcation <span style='color:red;'><?php echo $count ?></span></a>
 			</div>
 		</div>
 		 <div class="col-lg-10">
@@ -493,7 +508,10 @@
 			  
 			  <div class="tab-pane fade" id="v-pills-reports" role="tabpanel" aria-labelledby="v-pills-reports-tab">
 				<div class="card card-outline-secondary my-4">
-				  <div class="card-header">Reports<button id="reportsTablesRefresh" name="reportsTablesRefresh" class="btn btn-warning float-right btn-sm">Refresh</button></div>
+					
+				  <div class="card-header">Reports
+					
+					<button id="reportsTablesRefresh" name="reportsTablesRefresh" class="btn btn-warning float-right btn-sm">Refresh</button></div>
 				  <div class="card-body">										
 					<ul class="nav nav-tabs" role="tablist">
 						<li class="nav-item">
@@ -581,7 +599,66 @@
 					</div>
 				  </div> 
 				</div>
+
+					
 			  </div>
+
+			  <div class="tab-pane fade" id="v-pills-stock" role="tabpanel" aria-labelledby="v-pills-stock-tab">
+			  <?php 
+				$sql = "SELECT * FROM item WHERE stock <= safety_stock ORDER BY productID ASC";
+				$lowStockQuery = $conn->prepare($sql);
+				
+				// Execute the query
+				if ($lowStockQuery->execute()) {
+					$rows = $lowStockQuery->fetchAll(PDO::FETCH_ASSOC);
+					?>
+					<div class="container mt-5">
+    <div class="row">
+	<div class="container">
+    <!-- Title for Low Stock Items -->
+    <h3 class="text-center text-danger mb-4">Low Stock Items</h3>
+
+    <div class="row">
+        <?php
+        // Loop through the fetched rows
+        foreach ($rows as $row) {
+            // Start each card
+            echo '<div class="col-md-4 mb-4">'; // Responsive 3-column layout on medium screens
+            echo '<div class="card" style="width: 100%;">';
+            
+            // Card Image (optional: if you have an image URL in your data)
+            echo '<img src="data/item_images/' . $row['itemNumber'] . '/' . $row['imageURL'] . '" class="card-img-top" alt="' . $row['itemName'] . '" style="width: 30%; margin: 0 auto; display: block;">';
+
+            // Card Body
+            echo '<div class="card-body">';
+            
+            // Card Title
+            echo '<h5 class="card-title">Product ID: ' . $row['productID'] . '</h5>';
+            echo '<p class="card-text"><strong>Product Name: </strong>' . $row['itemName'] . '</p>';
+            echo '<p class="card-text" style="color:red;"><strong>Stocks Remaining: </strong>' . $row['stock'] . '</p>';
+            
+            // End of card body and card
+            echo '</div>';
+            echo '</div>';
+            echo '</div>'; // Close column div
+        }
+        ?>
+    </div>
+</div>
+
+        ?>
+    </div>
+</div>
+
+					<?php
+				} else {
+					echo "Query execution failed.";
+					// Optionally, print more info on why it failed
+					print_r($lowStockQuery->errorInfo());
+					exit;
+				}
+				?>
+				</div>
 			</div>
 		 </div>
 	  </div>

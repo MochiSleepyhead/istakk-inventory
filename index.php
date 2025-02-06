@@ -41,7 +41,7 @@
 			  <a class="nav-link" id="v-pills-customer-tab" data-toggle="pill" href="#v-pills-customer" role="tab" aria-controls="v-pills-customer" aria-selected="false">Customer</a>
 			  <a class="nav-link" id="v-pills-search-tab" data-toggle="pill" href="#v-pills-search" role="tab" aria-controls="v-pills-search" aria-selected="false">Search</a>
 			  <a class="nav-link" id="v-pills-reports-tab" data-toggle="pill" href="#v-pills-reports" role="tab" aria-controls="v-pills-reports" aria-selected="false">Reports</a>
-			  <a class="nav-link" id="v-pills-stock-tab" data-toggle="pill" href="#v-pills-stock" role="tab" aria-controls="v-pills-stock" aria-selected="false">Notifcation <span style='color:red;'><?php echo $count ?></span></a>
+			  <a class="nav-link" id="v-pills-stock-tab" data-toggle="pill" href="#v-pills-stock" role="tab" aria-controls="v-pills-stock" aria-selected="false">Notification <span style='color:red;'><?php echo $count ?></span></a>
 			</div>
 		</div>
 		 <div class="col-lg-10">
@@ -126,7 +126,7 @@
 								  <input type="text" class="form-control" value="0" name="itemLeadTime" id="itemLeadTime">
 								</div>
 								<div class="form-group col-md-3">
-								  <label for="itemSafetyStock">Satefy Stock<span class="requiredIcon">*</span></label>
+								  <label for="itemSafetyStock">Safety Stock<span class="requiredIcon">*</span></label>
 								  <input type="text" class="form-control" value="0" name="itemSafetyStock" id="itemSafetyStock">
 								</div>
 								<div class="form-group col-md-3">

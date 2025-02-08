@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.7.4
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 30, 2020 at 01:54 PM
--- Server version: 10.1.30-MariaDB
--- PHP Version: 7.2.1
+-- Generation Time: Feb 08, 2025 at 02:45 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -21,6 +20,20 @@ SET time_zone = "+00:00";
 --
 -- Database: `shop_inventory`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_inventory_metrics` ()   BEGIN
+    UPDATE `inventory_metrics` im
+    JOIN `item` i ON im.productID = i.productID
+    SET 
+        im.eoq = SQRT((2 * i.demand * i.ordering_cost) / i.holding_cost),
+        im.rop = ((i.demand / 365) * i.lead_time) + i.safety_stock;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -39,25 +52,66 @@ CREATE TABLE `customer` (
   `city` varchar(30) DEFAULT NULL,
   `district` varchar(30) NOT NULL,
   `status` varchar(255) NOT NULL DEFAULT 'Active',
-  `createdOn` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `createdOn` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `customer`
 --
 
 INSERT INTO `customer` (`customerID`, `fullName`, `email`, `mobile`, `phone2`, `address`, `address2`, `city`, `district`, `status`, `createdOn`) VALUES
-(4, 'Bill Gates', 'bill@microsoft.com', 993737, 772484884, '45, Palo Alto House, Marine Drive', 'South Carolina', 'Microsoft', 'Kurunegala', 'Active', '2018-04-30 15:14:02'),
-(14, 'Steve Jobs', 'sjobs@apple.com', 333829832, 0, '1st Floor, Apple House, ', 'Las Vegas Street', 'Las Vegas', 'Monaragala', 'Disabled', '2018-05-01 12:03:10'),
-(18, 'Asitha Silva', 'asitha@gmail.com', 777987654, 0, 'No. 3, Radcliff Avenue, School Lane', 'Kalutara South', 'Kalutara', 'Kalutara', 'Active', '2018-05-02 09:52:28'),
-(24, 'Sunil Perera', 'Sunil@gypsies.sound', 338393932, 413837293, '67/7, Perera Villa, Jayasekara Avenue', 'Mount Lavinia', 'Ratmalana', 'Colombo', 'Active', '2018-05-02 10:48:37'),
-(25, 'Theresa May', 'may34@uk.gov.com', 329393903, 777833737, '12, Downing Street', 'London', 'London', 'Matale', 'Active', '2018-05-03 02:28:07'),
-(26, 'Sachin Tendulkar', 'sachintendulkar@icc.com', 444958303, 84792838, '789-4, Apartment 3, ', 'Cric Complex', 'New Delhi', 'Puttalam', 'Active', '2018-05-03 02:28:38'),
-(38, 'Nuwan Perara', 'nuwan@yahoo.com', 839378202, 0, 'Nuwan Villa, Lower Street,', 'North Mulativu', 'Mullaitivu', 'Mullaitivu', 'Active', '2018-05-05 11:17:49'),
-(39, 'Amal Silverton', 'amals452@yahoo.com', 232345676, 0, 'Amal\'s House, Amal\'s Street,', 'Amal Road', 'Ambalangoda', 'Galle', 'Active', '2018-05-05 13:27:06'),
-(40, 'Andrew Symonds', 'symonds@cricket.au.com', 123, 0, '23, Oak View Avenue', 'Western Australia', 'Melbourne', 'Colombo', 'Disabled', '2018-05-13 01:20:23'),
-(41, 'Mark Taylor', '', 111, 0, '111', '', '', 'Colombo', 'Active', '2018-05-13 01:24:54'),
-(42, 'Nelson Mandela', 'sjobs@apple.com', 333829832, 0, '1st Floor, Apple House, ', 'Las Vegas Street', 'Las Vegas', 'Kalutara', 'Disabled', '2018-05-13 02:39:41');
+(47, 'Joel Garcia', '', 2147483647, 0, 'San Antonio Sto. Tomas', 'Sto. Tomas', NULL, '', 'Active', '2025-02-06 18:54:27'),
+(48, 'Aldrin Calinao', '', 2147483647, 2147483647, 'San Miguel Sto. Tomas', '', NULL, '', 'Active', '2025-02-06 18:55:47'),
+(49, 'Mario Galicia', '', 2147483647, 0, 'Brgy. Santiago Sto. Tomas', 'TInurik, Tanauan', NULL, '', 'Active', '2025-02-06 19:02:34'),
+(50, 'Jose Cruz', '', 2147483647, 0, 'Brgy. Santiago Sto. Tomas', '', NULL, '', 'Active', '2025-02-06 19:03:28'),
+(51, 'Isabel Trambulo', '', 2147483647, 0, 'San Antonio Sto. Tomas', 'San Felix Sto. Tomas', NULL, '', 'Active', '2025-02-06 19:07:25'),
+(52, 'Mariano Geronimo ', '', 2147483647, 2147483647, 'Primavera Homes Darasa, Tanauan', 'Bagumbayan, Tanauan', NULL, '', 'Active', '2025-02-06 19:09:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inventory_metrics`
+--
+
+CREATE TABLE `inventory_metrics` (
+  `productID` int(11) NOT NULL,
+  `eoq` float NOT NULL,
+  `rop` float NOT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `applied_rop_date` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `inventory_metrics`
+--
+
+INSERT INTO `inventory_metrics` (`productID`, `eoq`, `rop`, `last_updated`, `applied_rop_date`) VALUES
+(63, 40, 31.9178, '2025-02-06 17:10:50', NULL),
+(64, 37.9473, 28.726, '2025-02-06 17:13:33', NULL),
+(65, 24.4949, 15.6849, '2025-02-06 17:14:39', NULL),
+(66, 21.9089, 12.5479, '2025-02-06 17:15:56', NULL),
+(67, 24.4949, 15.6849, '2025-02-06 17:16:54', NULL),
+(68, 40, 61.6438, '2025-02-06 17:17:49', NULL),
+(69, 15.4919, 9.24658, '2025-02-06 17:19:39', NULL),
+(70, 24.4949, 45.8219, '2025-02-06 17:20:38', NULL),
+(71, 24.4949, 45.411, '2025-02-06 17:21:30', NULL),
+(72, 4.6188, 12.2192, '2025-02-06 17:22:21', NULL),
+(73, 3.70328, 9.16438, '2025-02-06 17:23:33', NULL),
+(74, 18.9737, 13.3699, '2025-02-06 17:25:20', NULL),
+(75, 34.641, 31.3699, '2025-02-06 17:26:37', NULL),
+(76, 14.1421, 7.06849, '2025-02-06 17:27:39', NULL),
+(77, 8.94427, 6.05479, '2025-02-06 17:28:19', NULL),
+(78, 23.6643, 42.3836, '2025-02-06 17:29:12', NULL),
+(79, 10, 7.06849, '2025-02-06 17:31:03', NULL),
+(80, 5.65685, 9.16438, '2025-02-06 17:32:22', NULL),
+(81, 39.4968, 40.7808, '2025-02-06 17:34:44', NULL),
+(82, 36.3318, 34.5069, '2025-02-06 17:35:39', NULL),
+(83, 20, 30.5479, '2025-02-06 17:36:29', NULL),
+(84, 17.8885, 24.4384, '2025-02-06 17:38:44', NULL),
+(85, 20, 15.6849, '2025-02-06 17:39:53', NULL),
+(86, 20, 15.6849, '2025-02-06 17:40:36', NULL),
+(87, 8, 12.3288, '2025-02-06 17:41:27', NULL),
+(88, 31.6228, 29.7945, '2025-02-07 03:11:42', NULL);
 
 -- --------------------------------------------------------
 
@@ -69,30 +123,50 @@ CREATE TABLE `item` (
   `productID` int(11) NOT NULL,
   `itemNumber` varchar(255) NOT NULL,
   `itemName` varchar(255) NOT NULL,
-  `discount` float NOT NULL DEFAULT '0',
-  `stock` int(11) NOT NULL DEFAULT '0',
-  `unitPrice` float NOT NULL DEFAULT '0',
+  `discount` float NOT NULL DEFAULT 0,
+  `stock` int(11) NOT NULL DEFAULT 0,
+  `unitPrice` float NOT NULL DEFAULT 0,
   `imageURL` varchar(255) NOT NULL DEFAULT 'imageNotAvailable.jpg',
   `status` varchar(255) NOT NULL DEFAULT 'Active',
-  `description` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `description` text NOT NULL,
+  `demand` int(11) NOT NULL DEFAULT 0,
+  `ordering_cost` float NOT NULL DEFAULT 0,
+  `holding_cost` float NOT NULL DEFAULT 0,
+  `lead_time` int(11) NOT NULL DEFAULT 0,
+  `safety_stock` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `item`
 --
 
-INSERT INTO `item` (`productID`, `itemNumber`, `itemName`, `discount`, `stock`, `unitPrice`, `imageURL`, `status`, `description`) VALUES
-(34, '1', 'First Bag', 0, 28, 1500, '1525670999_1.png', 'Active', ''),
-(35, '2', 'School Bag', 0, 5, 500, '1525681111_661539.png', 'Active', ''),
-(36, '3', 'Office Bag', 0, 5, 1300, '1525709924_office bag.jpg', 'Active', ''),
-(37, '4', 'Leather Bag', 2, 6, 3409, '1525710010_leather bag.jpg', 'Active', ''),
-(38, '5', 'Travel Bag', 2, 17, 1200, '1525706032_travel bag.jpg', 'Active', ''),
-(39, '6', 'Gym Bag', 0, 0, 3000, '1525710463_gym bag.jpg', 'Active', ''),
-(40, '7', 'Handbag', 1.5, 10, 1650, '1525713267_handbag.jpg', 'Active', ''),
-(41, '8', 'Laptop Bag', 2.1, 9, 2300, '1525750683_661539.png', 'Active', ''),
-(43, '10', 'Sports Bag', 1, 92, 1000, '1525756289_sports bag.jpg', 'Active', ''),
-(45, '11', 'First Aid Bag', 1.5, 11, 1200, '1525787551_first aid bag.jpg', 'Active', ''),
-(49, '14', 'Hiking Bag', 1.5, 6, 1200, '1526297640_hiking bag.jpg', 'Active', 'This is a hiking bag. Ideal for long distance hikes. Light-weight and water proof.');
+INSERT INTO `item` (`productID`, `itemNumber`, `itemName`, `discount`, `stock`, `unitPrice`, `imageURL`, `status`, `description`, `demand`, `ordering_cost`, `holding_cost`, `lead_time`, `safety_stock`) VALUES
+(63, '1', 'Reading Glass', 10, 32, 50, '1738865550_readingglasses.png', 'Active', 'Eyewear with graded lenses.\n', 100, 40, 5, 7, 30),
+(64, '2', 'Sunglasses', 2, 23, 100, '1738865567_sunglasses.png', 'Active', 'Eyewear with dimmed lenses.\n', 0, 0, 0, 0, 0),
+(65, '3', 'Remote', 5, 10, 120, '1738865632_universalremote.png', 'Active', 'Universal Remote for different brands of TV.\n', 50, 30, 5, 5, 15),
+(66, '4', 'Flashlight', 10, 10, 100, '1738865646_flashlight.png', 'Active', 'A portable source of light that can be recharged thru power outlets.\n\n', 40, 30, 5, 5, 12),
+(67, '5', 'Calculator', 10, 5, 150, '1738865657_calculator.png', 'Active', 'An electronic calculator of the KENKO brand.\n\n\n', 50, 30, 5, 5, 15),
+(68, '6', 'Butane', 0, 11, 80, '1738865675_butanegas.png', 'Active', 'A refillable LPG canister.\n\n\n\n', 200, 20, 5, 3, 60),
+(69, '7', 'Flame Gun', 10, 5, 150, '1738865706_flamegun.png', 'Active', 'A tool that can produce flames when attached to a butane canister.\n', 30, 20, 5, 3, 9),
+(70, '8', 'Data Cable Type-C', 10, 7, 150, '1738865721_datacabletypec.png', 'Active', 'Fast-charging data cable for Type-C ports.\n', 150, 10, 5, 2, 45),
+(71, '9', 'Earphones', 0, 38, 150, '1738865841_headset.png', 'Active', 'An audio device with headphones and a microphone, used for calls, gaming, or listening to music.\n', 150, 10, 5, 1, 45),
+(72, '10', 'Lip Tint', 0, 16, 90, '1738865749_liptint.png', 'Active', 'A cosmetic product used to add color to lips and sometimes cheeks, offering a lightweight and natural look.\n', 40, 8, 30, 2, 12),
+(73, '11', 'Petroleum Jelly ', 0, 1, 60, '1738865761_vaselinepetroleumjelly.png', 'Active', 'A versatile skin-care product used for moisturizing, healing dry skin, and protecting minor cuts or burns.\n', 30, 8, 35, 2, 9),
+(74, '12', 'Cap', 5, 13, 150, '1738865770_cap.png', 'Active', 'A headwear accessory that provides shade from the sun and adds a stylish touch to an outfit.\n\n', 45, 20, 5, 3, 13),
+(75, '13', 'Extension', 5, 35, 200, '1738865780_extension.png', 'Active', 'A power strip with multiple sockets, allowing multiple devices to be plugged in at once.\n\n\n', 100, 30, 5, 5, 30),
+(76, '14', 'Watch', 10, 7, 450, '1738865789_watch.png', 'Active', 'A timekeeping device worn on the wrist, available in analog or digital versions.\n\n\n\n', 25, 20, 5, 1, 7),
+(77, '15', 'Headset', 10, 2, 400, '1738865865_earphones.png', 'Active', 'An audio device with headphones and a microphone, used for calls, gaming, or listening to music.\n\n\n\n', 20, 10, 5, 1, 6),
+(78, '16', 'Batteries', 0, 16, 20, '1738865876_batteries.png', 'Active', 'Portable energy storage devices that power electronic devices like remotes, clocks, and flashlights.\n\n\n\n', 140, 10, 5, 1, 42),
+(79, '17', 'Mouse', 5, 4, 250, '1738865887_mouse.png', 'Active', 'A computer peripheral that allows users to navigate and control on-screen actions with ease\n', 25, 10, 5, 1, 7),
+(80, '18', 'Deodorant', 0, 3, 80, '1738870156_deodorant.png', 'Active', 'A personal care product that helps prevent body odor and keeps underarms fresh.\n', 30, 8, 15, 2, 9),
+(81, '19', 'Flourescent Bulb ', 0, 24, 50, '1738865899_flourescentbulb.png', 'Active', 'An energy-efficient light source that emits bright, cool-toned light.\n', 130, 30, 5, 5, 39),
+(82, '20', 'LED Bulb', 0, 40, 90, '1738865911_ledbulb.png', 'Active', 'A modern light bulb that is energy-efficient, long-lasting, and provides bright illumination.\n', 110, 30, 5, 5, 33),
+(83, '21', 'Lanyard', 0, 26, 35, '1738865925_lanyard.png', 'Active', 'A cord or strap worn often strapped to a phone, often used with other accessories.\n\n', 100, 10, 5, 2, 30),
+(84, '22', 'Type C Phone Charger', 10, 7, 250, '1738865945_phonecharger.png', 'Active', 'A fast-charging cable with a reversible USB-C connector, used for charging modern smartphones and devices.\n\n\n', 80, 10, 5, 2, 24),
+(85, '23', 'AV Cable', 0, 10, 100, '1738865955_avcable.png', 'Active', 'A cable used to transmit audio and video signals between devices like TVs, DVD players, and speakers.\n\n\n', 50, 20, 5, 5, 15),
+(86, '24', 'HDMI Cable', 0, 7, 150, '1738865971_hdmicable.png', 'Active', 'A high-definition multimedia cable used to transmit video and audio signals between devices such as TVs, gaming consoles, and laptops.\n\n\n\n', 50, 20, 5, 5, 15),
+(87, '25', 'Insecticide Spray', 0, 4, 100, '1738865981_insecticidespray.png', 'Active', 'A chemical spray designed to kill or repel insects like mosquitoes, cockroaches, and ants.\n\n\n', 40, 20, 25, 3, 12),
+(88, '26', 'Chalk', 0, 35, 50, 'imageNotAvailable.jpg', 'Active', '', 0, 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -105,30 +179,11 @@ CREATE TABLE `purchase` (
   `itemNumber` varchar(255) NOT NULL,
   `purchaseDate` date NOT NULL,
   `itemName` varchar(255) NOT NULL,
-  `unitPrice` float NOT NULL DEFAULT '0',
-  `quantity` int(11) NOT NULL DEFAULT '0',
+  `unitPrice` float NOT NULL DEFAULT 0,
+  `quantity` int(11) NOT NULL DEFAULT 0,
   `vendorName` varchar(255) NOT NULL DEFAULT 'Test Vendor',
-  `vendorID` int(11) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `purchase`
---
-
-INSERT INTO `purchase` (`purchaseID`, `itemNumber`, `purchaseDate`, `itemName`, `unitPrice`, `quantity`, `vendorName`, `vendorID`) VALUES
-(39, '1', '2018-05-24', 'First Bag', 1600, 10, 'Johnson and Johnsons Co.', 3),
-(40, '2', '2018-05-18', 'First Bag', 2341, 2, 'Louise Vitton Bag', 4),
-(41, '4', '2018-05-07', 'Leather Bag', 1234, 3, 'Johnson and Johnsons Co.', 3),
-(42, '1', '2018-05-24', 'First Bag', 345, 12, 'Louise Vitton Bag', 4),
-(43, '5', '2018-05-03', 'Travel Bag', 35, 3, 'Johnson and Johnsons Co.', 3),
-(44, '5', '2018-05-16', 'Travel Bag', 3000, 2, 'ABC Company', 1),
-(45, '5', '2018-05-21', 'Travel Bag', 3000, 10, 'Sample Vendor 222', 2),
-(46, '4', '2018-05-19', 'Leather Bag', 1200, 4, 'Johnson and Johnsons Co.', 3),
-(47, '2', '2018-05-10', 'School Bag', 2, 1, 'Sample Vendor 222', 2),
-(48, '1', '2018-05-12', 'Handbag', 2, 9, 'ABC Company', 1),
-(50, '14', '2018-05-15', 'Hiking Bag', 1000, 5, 'Louise Vitton Bag', 4),
-(51, '11', '2018-05-11', 'First Aid Bag', 1121, 1, 'ABC Company', 1),
-(52, '1', '2018-05-21', 'First Bag', 1235, 2, 'Sample Vendor 222', 2);
+  `vendorID` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -143,33 +198,26 @@ CREATE TABLE `sale` (
   `customerName` varchar(255) NOT NULL,
   `itemName` varchar(255) NOT NULL,
   `saleDate` date NOT NULL,
-  `discount` float NOT NULL DEFAULT '0',
-  `quantity` int(11) NOT NULL DEFAULT '0',
-  `unitPrice` float(10,0) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `discount` float NOT NULL DEFAULT 0,
+  `quantity` int(11) NOT NULL DEFAULT 0,
+  `unitPrice` float(10,0) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `sale`
 --
 
 INSERT INTO `sale` (`saleID`, `itemNumber`, `customerID`, `customerName`, `itemName`, `saleDate`, `discount`, `quantity`, `unitPrice`) VALUES
-(1, '3', 4, 'Bill Gates', 'Office Bag', '2018-05-24', 5, 2, 1300),
-(2, '1', 39, 'Amal Silverton', 'First Bag', '2018-05-24', 0, 111, 1500),
-(3, '4', 18, 'Asitha Silva', 'Leather Bag', '2018-05-24', 2, 1, 3409),
-(4, '5', 25, 'Theresa May', 'Travel Bag', '2018-05-24', 2, 1, 1200),
-(5, '6', 24, 'Sunil Perera', 'Gym Bag', '2018-05-24', 0, 1, 3000),
-(6, '7', 14, 'Steve Jobs', 'Handbag', '2018-05-24', 1.5, 1, 1650),
-(7, '3', 4, 'Bill Gates', 'Office Bag', '2018-05-24', 0, 3, 1300),
-(8, '8', 4, 'Bill Gates', 'Laptop Bag', '2018-05-14', 2.1, 1, 2300),
-(9, '6', 26, 'Sachin Tendulkar', 'Gym Bag', '2018-05-14', 0, 1, 3000),
-(10, '5', 25, 'Theresa May', 'Travel Bag', '2018-05-14', 2, 9, 1200),
-(11, '10', 26, 'Sachin Tendulkar', 'Sports Bag', '2018-04-05', 1, 7, 1000),
-(12, '1', 14, 'Steve Jobs', 'First Bag', '2018-05-14', 0, 2, 1500),
-(13, '3', 38, 'Nuwan Perara', 'Office Bag', '2018-05-24', 0, 0, 1300),
-(14, '10', 39, 'Amal Silverton', 'Sports Bag', '2018-05-17', 1, 1, 1000),
-(15, '14', 38, 'Nuwan Perara', 'Hiking Bag', '2018-05-24', 1.5, 1, 1200),
-(16, '1', 14, 'Steve Jobs', 'First Bag', '2018-05-24', 10, 1, 1500),
-(17, '4', 14, 'Steve Jobs', 'Leather Bag', '2018-05-18', 2, 1, 3409);
+(18, '16', 49, 'Mario Galicia', '', '2025-02-03', 0, 2, 20),
+(19, '3', 49, 'Mario Galicia', 'Remote', '2025-02-03', 5, 1, 120),
+(20, '24', 47, 'Joel Garcia', 'HDMI Cable', '2025-02-02', 0, 1, 150),
+(21, '25', 51, 'Isabel Trambulo', 'Insecticide Spray', '2025-02-03', 0, 1, 100),
+(22, '6', 48, 'Aldrin Calinao', 'Butane', '2025-02-04', 5, 3, 80),
+(23, '6', 49, 'Mario Galicia', 'Butane', '2025-02-04', 5, 2, 80),
+(24, '7', 50, 'Jose Cruz', 'Flame Gun', '2025-02-06', 10, 1, 150),
+(25, '8', 50, 'Jose Cruz', 'Data Cable Type-C', '2025-02-06', 10, 1, 150),
+(26, '11', 52, 'Mariano Geronimo ', 'Petroleum Jelly ', '2025-02-06', 0, 1, 60),
+(27, '18', 52, 'Mariano Geronimo ', 'Deodorant', '2025-02-06', 0, 2, 80);
 
 -- --------------------------------------------------------
 
@@ -183,7 +231,7 @@ CREATE TABLE `user` (
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `status` varchar(255) NOT NULL DEFAULT 'Active'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `user`
@@ -192,7 +240,10 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`userID`, `fullName`, `username`, `password`, `status`) VALUES
 (5, 'Guest', 'guest', '81dc9bdb52d04dc20036dbd8313ed055', 'Active'),
 (6, 'a', 'a', '0cc175b9c0f1b6a831c399e269772661', 'Active'),
-(7, 'admin', 'admin', '21232f297a57a5a743894a0e4a801fc3', 'Active');
+(7, 'admin', 'admin', '21232f297a57a5a743894a0e4a801fc3', 'Active'),
+(8, 'hello', 'hello', '5f4dcc3b5aa765d61d8327deb882cf99', 'Active'),
+(10, 'istakk', 'istakk1', '33bcea61ff7edac1e6c777b5d6607076', 'Active'),
+(11, 'athena', 'athena1', '33bcea61ff7edac1e6c777b5d6607076', 'Active');
 
 -- --------------------------------------------------------
 
@@ -211,22 +262,8 @@ CREATE TABLE `vendor` (
   `city` varchar(30) DEFAULT NULL,
   `district` varchar(30) NOT NULL,
   `status` varchar(255) NOT NULL DEFAULT 'Active',
-  `createdOn` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `vendor`
---
-
-INSERT INTO `vendor` (`vendorID`, `fullName`, `email`, `mobile`, `phone2`, `address`, `address2`, `city`, `district`, `status`, `createdOn`) VALUES
-(1, 'ABC Company', '', 2343567, 0, '80, Ground Floor, ABC Shopping Complex', '46th Avenue', 'Kolpetty', 'Colombo', 'Active', '2018-05-05 05:48:44'),
-(2, 'Sample Vendor 222', 'sample@volvo.com', 99828282, 283730183, '123, A Road, B avenue', 'Pitipana', 'Nugegoda', 'Mannar', 'Disabled', '2018-05-05 06:12:02'),
-(3, 'Johnson and Johnsons Co.', '', 32323, 0, '34, Malwatta Road, Kottawa', 'Pannipitiya', 'Maharagama', 'Colombo', 'Active', '2018-05-05 06:28:33'),
-(4, 'Louise Vitton Bag', 'vitton@vitton.usa.com', 323234938, 0, '45, Palmer Valley, 5th Crossing', 'Delaware', 'Palo Alto', 'Batticaloa', 'Active', '2018-05-05 06:29:41'),
-(6, 'Test Vendor', 'test@vendor.com', 43434, 47569937, 'Test address', 'Test address 2', 'Test City', 'Trincomalee', 'Active', '2018-05-05 06:53:14'),
-(7, 'Bags Co. Exporters Ltd.', '', 1111, 0, 'Sea Road, Bambalapitiya', '', '', 'Colombo', 'Active', '2018-05-15 10:36:54'),
-(8, 'New Bags Exporters', '', 191938930, 0, '123, A Road, B avenue, ', 'Gilford Crescent', 'Colpetty', 'Colombo', 'Active', '2018-05-16 12:36:53'),
-(9, 'A', 'a@gmail.com', 999995, 98866767, 'manila', 'Metro Manila', 'Manila City', 'Ampara', 'Active', '2020-07-30 11:40:25');
+  `createdOn` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Indexes for dumped tables
@@ -237,6 +274,12 @@ INSERT INTO `vendor` (`vendorID`, `fullName`, `email`, `mobile`, `phone2`, `addr
 --
 ALTER TABLE `customer`
   ADD PRIMARY KEY (`customerID`);
+
+--
+-- Indexes for table `inventory_metrics`
+--
+ALTER TABLE `inventory_metrics`
+  ADD PRIMARY KEY (`productID`);
 
 --
 -- Indexes for table `item`
@@ -276,13 +319,13 @@ ALTER TABLE `vendor`
 -- AUTO_INCREMENT for table `customer`
 --
 ALTER TABLE `customer`
-  MODIFY `customerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `customerID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `item`
 --
 ALTER TABLE `item`
-  MODIFY `productID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `productID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
 
 --
 -- AUTO_INCREMENT for table `purchase`
@@ -294,19 +337,29 @@ ALTER TABLE `purchase`
 -- AUTO_INCREMENT for table `sale`
 --
 ALTER TABLE `sale`
-  MODIFY `saleID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `saleID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `userID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `vendor`
 --
 ALTER TABLE `vendor`
-  MODIFY `vendorID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `vendorID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `inventory_metrics`
+--
+ALTER TABLE `inventory_metrics`
+  ADD CONSTRAINT `inventory_metrics_ibfk_1` FOREIGN KEY (`productID`) REFERENCES `item` (`productID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

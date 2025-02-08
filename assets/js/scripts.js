@@ -899,11 +899,8 @@ function addCustomer() {
 	var customerDetailsCustomerFullName = $('#customerDetailsCustomerFullName').val();
 	var customerDetailsCustomerEmail = $('#customerDetailsCustomerEmail').val();
 	var customerDetailsCustomerMobile = $('#customerDetailsCustomerMobile').val();
-	var customerDetailsCustomerPhone2 = $('#customerDetailsCustomerPhone2').val();
 	var customerDetailsCustomerAddress = $('#customerDetailsCustomerAddress').val();
-	var customerDetailsCustomerAddress2 = $('#customerDetailsCustomerAddress2').val();
 	var customerDetailsCustomerCity = $('#customerDetailsCustomerCity').val();
-	var customerDetailsCustomerDistrict = $('#customerDetailsCustomerDistrict option:selected').text();
 	var customerDetailsStatus = $('#customerDetailsStatus option:selected').text();
 	
 	$.ajax({
@@ -913,11 +910,8 @@ function addCustomer() {
 			customerDetailsCustomerFullName:customerDetailsCustomerFullName,
 			customerDetailsCustomerEmail:customerDetailsCustomerEmail,
 			customerDetailsCustomerMobile:customerDetailsCustomerMobile,
-			customerDetailsCustomerPhone2:customerDetailsCustomerPhone2,
 			customerDetailsCustomerAddress:customerDetailsCustomerAddress,
-			customerDetailsCustomerAddress2:customerDetailsCustomerAddress2,
 			customerDetailsCustomerCity:customerDetailsCustomerCity,
-			customerDetailsCustomerDistrict:customerDetailsCustomerDistrict,
 			customerDetailsStatus:customerDetailsStatus,
 		},
 		success: function(data){
@@ -942,7 +936,6 @@ function addVendor() {
 	var vendorDetailsVendorAddress = $('#vendorDetailsVendorAddress').val();
 	var vendorDetailsVendorAddress2 = $('#vendorDetailsVendorAddress2').val();
 	var vendorDetailsVendorCity = $('#vendorDetailsVendorCity').val();
-	var vendorDetailsVendorDistrict = $('#vendorDetailsVendorDistrict option:selected').text();
 	var vendorDetailsStatus = $('#vendorDetailsStatus option:selected').text();
 	
 	$.ajax({
@@ -956,7 +949,6 @@ function addVendor() {
 			vendorDetailsVendorAddress:vendorDetailsVendorAddress,
 			vendorDetailsVendorAddress2:vendorDetailsVendorAddress2,
 			vendorDetailsVendorCity:vendorDetailsVendorCity,
-			vendorDetailsVendorDistrict:vendorDetailsVendorDistrict,
 			vendorDetailsStatus:vendorDetailsStatus,
 		},
 		success: function(data){
@@ -1349,12 +1341,9 @@ function getCustomerDetailsToPopulate(){
 			//$('#customerDetailsCustomerID').val(data.customerID);
 			$('#customerDetailsCustomerFullName').val(data.fullName);
 			$('#customerDetailsCustomerMobile').val(data.mobile);
-			$('#customerDetailsCustomerPhone2').val(data.phone2);
 			$('#customerDetailsCustomerEmail').val(data.email);
 			$('#customerDetailsCustomerAddress').val(data.address);
-			$('#customerDetailsCustomerAddress2').val(data.address2);
 			$('#customerDetailsCustomerCity').val(data.city);
-			$('#customerDetailsCustomerDistrict').val(data.district).trigger("chosen:updated");
 			$('#customerDetailsStatus').val(data.status).trigger("chosen:updated");
 		}
 	});
@@ -1535,12 +1524,9 @@ function updateCustomer() {
 			customerDetailsCustomerID:customerDetailsCustomerID,
 			customerDetailsCustomerFullName:customerDetailsCustomerFullName,
 			customerDetailsCustomerMobile:customerDetailsCustomerMobile,
-			customerDetailsCustomerPhone2:customerDetailsCustomerPhone2,
 			customerDetailsCustomerAddress:customerDetailsCustomerAddress,
 			customerDetailsCustomerEmail:customerDetailsCustomerEmail,
-			customerDetailsCustomerAddress2:customerDetailsCustomerAddress2,
 			customerDetailsCustomerCity:customerDetailsCustomerCity,
-			customerDetailsCustomerDistrict:customerDetailsCustomerDistrict,
 			customerDetailsStatus:customerDetailsStatus,
 		},
 		success: function(data){
@@ -1567,7 +1553,6 @@ function updateVendor() {
 	var vendorDetailsVendorEmail = $('#vendorDetailsVendorEmail').val();
 	var vendorDetailsVendorAddress2 = $('#vendorDetailsVendorAddress2').val();
 	var vendorDetailsVendorCity = $('#vendorDetailsVendorCity').val();
-	var vendorDetailsVendorDistrict = $('#vendorDetailsVendorDistrict').val();
 	var vendorDetailsStatus = $('#vendorDetailsStatus option:selected').text();
 	
 	$.ajax({
@@ -1582,7 +1567,6 @@ function updateVendor() {
 			vendorDetailsVendorEmail:vendorDetailsVendorEmail,
 			vendorDetailsVendorAddress2:vendorDetailsVendorAddress2,
 			vendorDetailsVendorCity:vendorDetailsVendorCity,
-			vendorDetailsVendorDistrict:vendorDetailsVendorDistrict,
 			vendorDetailsStatus:vendorDetailsStatus,
 		},
 		success: function(data){
